@@ -8,17 +8,22 @@ const jwt = require('jsonwebtoken'); // used to create, sign, and verify tokens
 const config = require('./config.js');
 
 exports.local = passport.use(new LocalStrategy(User.authenticate()));
-passport.serializeUser(User.serializeUser());
-passport.deserializeUser(User.deserializeUser());
+passport.serializeUser(User.serializeUser()); // Error handler
+passport.deserializeUser(User.deserializeUser()); // Checks if is true
 
+// Takes a user JSON as an arguement and we will create a JWT token.
 exports.getToken = function(user) {
     return jwt.sign(user, config.secretKey, {expiresIn: 3600});
 };
 
-const opts = {};
-opts.jwtFromRequest = ExtractJwt.fromAuthHeaderAsBearerToken();
-opts.secretOrKey = config.secretKey;
+const opts = {}; // Variable that has a (JSON). Holds key-value pair. Data structure to hold data
 
+// Extracting JWT from POST request
+opts.jwtFromRequest = ExtractJwt.fromAuthHeaderAsBearerToken();
+opts.secretOrKey = config.secretKey; // Secret key
+
+// Using passport to create a new strategy
+// this parses information from the req.message and loads it in our req.message
 exports.jwtPassport = passport.use(
     new JwtStrategy(
         opts,
@@ -38,3 +43,19 @@ exports.jwtPassport = passport.use(
 );
 
 exports.verifyUser = passport.authenticate('jwt', {session: false});
+
+exports.verifyAdmin = ((req,res, next) => {
+    User.findById({_id: req.user._id})
+    .then((user) => {
+        if (user.admin == true){
+            console.log("This admin is a user", user.admin);
+            next();
+        }
+        else {
+            err = new Error("You are not authorized to perform this operation!");
+            res.statusCode = 403;
+            return next(err);
+        }
+    }, (err) => next(err))
+    .catch((err) => next(err));
+})
