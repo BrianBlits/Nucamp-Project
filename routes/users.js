@@ -2,6 +2,7 @@
 const express = require('express');
 const router = express.Router();
 
+
 // Javascript files to import
 const User = require('../models/user');
 const passport = require('passport');
@@ -79,6 +80,15 @@ router.get('/logout', cors.corsWithOptions, (req, res) => {
         err.status = 401;
         next(err);
     }
+});
+
+router.get('/facebook/token', passport.authenticate('facebook-token'), (req, res) => {
+  if (req.user) {
+      const token = authenticate.getToken({_id: req.user._id});
+      res.statusCode = 200;
+      res.setHeader('Content-Type', 'application/json');
+      res.json({success: true, token: token, status: 'You are successfully logged in!'});
+  }
 });
 
 module.exports = router;
