@@ -22,7 +22,7 @@ const partnerSchema = new Schema({
     },{
         timestamps: true
 });
-console.log(partnerSchema)
+
 const Partner = mongoose.model('Partner', partnerSchema);
 
 module.exports = Partner;
